@@ -1,0 +1,30 @@
+.md-header__button.md-icon[for="__drawer"] {
+ width: 2.5rem;
+ height: 2.5rem;
+ display: flex;
+ align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease,
+              transform 0.1s ease;
+}
+
+.md-header__button.md-icon[for="__drawer"] svg {
+  width: 1.4rem;
+  height: 1.4rem;
+  color: #ffffff;
+  fill: currentColor;
+}
+
+.md-header__button.md-icon[for="__drawer"]:hover {
+  transform: translateY(-1px);
+}
+
+.md-header__button.md-icon[for="__drawer"]:active {
+  transform: translateY(0);
+}
+
+@media screen and (min-width: 1220px) {
+  .md-header__button.md-icon[for="__drawer"] {
+    display: none;
+  }
+}
