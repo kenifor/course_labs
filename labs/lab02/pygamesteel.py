@@ -5,6 +5,7 @@ pygame.init()
 screen_width = 800
 screen_height = 600
 window_size = (screen_width, screen_height)
+screen = pygame.display.set_mode(window_size)   # сохраняем ссылку
 pygame.display.set_mode(window_size) # Создаем окно
 
 # Задаем цвет фона
