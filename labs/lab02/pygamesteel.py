@@ -1,12 +1,13 @@
 import pygame
+
 pygame.init()
 
 # Устанавливаем размеры окна
 screen_width = 800
 screen_height = 600
 window_size = (screen_width, screen_height)
-screen = pygame.display.set_mode(window_size)   # сохраняем ссылку
-pygame.display.set_mode(window_size) # Создаем окно
+screen = pygame.display.set_mode(window_size)  # сохраняем ссылку
+pygame.display.set_mode(window_size)  # Создаем окно
 
 # Задаем цвет фона
 bg_color = (255, 255, 255)
@@ -24,4 +25,4 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             quit()
-pygame.display.flip() # Обновляем экран
+pygame.display.flip()  # Обновляем экран

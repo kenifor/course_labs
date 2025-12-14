@@ -1,11 +1,12 @@
 import pygame
+
 pygame.init()
 
 screen_width = 800
 screen_height = 600
 window_size = (screen_width, screen_height)
-screen = pygame.display.set_mode(window_size)   # сохраняем ссылку
-pygame.display.set_mode(window_size) # Создаем окно
+screen = pygame.display.set_mode(window_size)  # сохраняем ссылку
+pygame.display.set_mode(window_size)  # Создаем окно
 
 bg_color = (255, 255, 255)
 pygame.draw.rect(screen, bg_color, [0, 0, screen_width, screen_height], 1)
@@ -21,4 +22,4 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             quit()
-pygame.display.flip() # Обновляем экран
+pygame.display.flip()  # Обновляем экран
