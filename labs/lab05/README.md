@@ -159,9 +159,13 @@ Hello appsecworld from @None
 └─# docker save -o hello_your_project.tar hellow-appsec-world
 
 ┌──(root㉿kali)-[/home/…/course_labs/labs/lab05/source]
+└─# sha256sum hellow_your_project.tar
+2b68afa6441e89acd92bc623e9b98c90c943f199ae96efeabb130612c0ef4625  hellow_your_project.tar
+
+┌──(root㉿kali)-[/home/…/course_labs/labs/lab05/source]
 └─# docker load -i hello_your_project.tar 
 Loaded image: hellow-appsec-world:latest
-                                                                                                                                                                                
+                                     
 ┌──(root㉿kali)-[/home/…/course_labs/labs/lab05/source]
 └─# docker run hellow-appsec-world       
 Hello appsecworld from @None
@@ -169,6 +173,11 @@ Hello appsecworld from @None
 #Тут образ собран под арм, поэтому будет ошибка
 $ docker load -i image.tar
 $ docker run hello-appsec-world
+
+┌──(root㉿kali)-[/home/…/course_labs/labs/lab05/source]
+└─# sha256sum image.tar         
+9a8bebe1ff86415103fb184a0ee9c70afaeaad7cc062db37438bce48557b51d2  image.tar
+
 ```
 
 - [ ] 6. Доработайте свой `python` скрипт подключаемыми библиотеками, далее их необходимо разместить в `requirements.txt`. Размещение библиотек в следующем формате:
