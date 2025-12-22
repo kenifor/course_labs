@@ -14,3 +14,5 @@ logs/
 .npmrc
 # /bom.json
 # /bom.xml
+node_modules/
+dist/

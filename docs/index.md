@@ -1,29 +1,23 @@
 ---
 hide:
   - toc
-
-title: Введение в курс AppSec
-description: Описание курса для ИБ, а также материалы по тому, что изучается на курсе, как устроены лабораторные работы и как подготовиться к практическим заданиям.
 ---
 
 <div align="center">
 
+<a href="https://img.shields.io/badge/Risk_Analyze-2448a2"></a>
 <img src="https://img.shields.io/badge/Course-Risk_Analysis-2448a2" alt="RA">
 <img src="https://img.shields.io/badge/AppSec-2448a2" alt="AppSec">
-<img src="https://img.shields.io/badge/Language-%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9-2448a2?style=flat" alt="Language: Russian">
-<img src="https://img.shields.io/badge/Difficulty-Intermediate-2448a2?style=flat" alt="Course Difficulty">
-<img src="https://img.shields.io/badge/Status-Active-success" alt="Status">
-<a href="https://www.apache.org/licenses/LICENSE-2.0"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License: Apache 2.0"></a>
-<img src="https://img.shields.io/badge/git-%23F05033.svg?style=flat-square&logo=git&logoColor=white" alt="Git">
-<a href="https://www.python.org/"><img src="https://img.shields.io/badge/python-3670A0.svg?logo=python&logoColor=ffdd54" alt="Python"></a>
-<a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-2496ED.svg?logo=docker&logoColor=white" alt="Docker"></a>
-<a href="https://www.mkdocs.org/"><img src="https://img.shields.io/badge/MkDocs-326ce5.svg?logo=MaterialForMkDocs&logoColor=white" alt="MkDocs"></a>
-<a href="https://www.gnu.org/software/bash/"><img src="https://img.shields.io/badge/shell-Bash-4EAA25.svg?logo=gnubash&logoColor=white" alt="Shell (Bash)"></a>
-<a href="https://www.markdownguide.org/"><img src="https://img.shields.io/badge/Markdown-000000.svg?logo=markdown&logoColor=white" alt="Markdown"></a>
-<a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Ruff"></a>
-<a href="https://github.com/geminishkv/course_labs/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/geminishkv/course_labs/ci.yml?branch=develop&label=GitHub%20Actions&logo=githubactions&logoColor=white" alt="CI" /></a>
-<a href="https://github.com/geminishkv/course_labs/releases"><img src="https://img.shields.io/github/v/release/geminishkv/course_labs?label=Release" alt="Latest release" /></a>
-<a href="https://github.com/geminishkv/course_labs"><img src="https://img.shields.io/github/repo-size/geminishkv/course_labs?label=Repo%20size" alt="Repo size" /></a></div>
+<a href="https://img.shields.io/github/license/geminishkv/course_labs"></a>
+<img src="https://img.shields.io/github/license/geminishkv/course_labs" alt="License">
+<img src="https://img.shields.io/badge/code%20style-ruff-5f97ff" alt="Code style: ruff">
+<img src="https://img.shields.io/badge/status-active-success" alt="Status">
+<img src="https://img.shields.io/github/repo-size/geminishkv/course_labs" alt="Repo Size">
+<img src="https://img.shields.io/github/last-commit/geminishkv/course_labs" alt="Last commit">
+<img src="https://img.shields.io/github/actions/workflow/status/geminishkv/course_labs/ci.yml?branch=develop" alt="CI">
+<img src="https://img.shields.io/github/v/release/geminishkv/course_labs" alt="Release">
+
+</div>
 
 <div class="tg-layout">
 
@@ -39,7 +33,7 @@ description: Описание курса для ИБ, а также матери
 <span>- Часть работ базируется на на <code>Go</code>, <code>Python</code>, <code>JAVA</code>, <code>Shell</code> и и.д.</span>
 <span>- Рассматриваются инструменты <code>SAST</code>, <code>SCA</code>, <code>Container Security</code>, <code>DAST</code>, <code>Secret Detection</code>, etc.</span>
 <span>- Работы направлены на углубление и изучение материалов анализа рисков и оценки защищенности приложений, которые необходимы для итерационной разработки, также дают дополнительно возможности для изучения паттернов программирования, прототипирования</span>
-<span>- Каждый мини проект должен будет собран по формату из представленных лабораторных работ и размещен на сервисе <code>GitHub</code>, с формирование соответствующего отчета в виде <code>gistup</code> для демонстрации выполненной работы и скриншотами результатов (<b>где это требуется</b>)</span>
+<span>- Каждый мини проект должен будет собран по формату из представленных лабораторных работ и размещен на сервисе <code>GitHub</code>, с формирование соответствующего отчета в виде <code>gistup</code> для демонстрации выполненной работы и скриншотами результатов(<b>где это требуется</b>)</span>
 <span>- Для каждой лабораторной работы следует создавать собственный репозиторий (возможно использование <code>fork</code> с родительского), в котором необходимо разместить исходный код проекта, далее составить отчет к нему в формате <code>gistup</code></span>
 </div>
 
@@ -220,7 +214,6 @@ description: Описание курса для ИБ, а также матери
         data-dark="1"
         data-dark_color="#2AABEE"></script>
 </div>
-
 </div>
 
 <hr>

@@ -3,9 +3,11 @@ import pygame
 pygame.init()
 
 # Устанавливаем размеры окна
-screen_width, screen_height = 800, 600
-screen = pygame.display.set_mode((screen_width, screen_height))
-pygame.display.set_caption("Пример Pygame")
+screen_width = 800
+screen_height = 600
+window_size = (screen_width, screen_height)
+screen = pygame.display.set_mode(window_size)  # сохраняем ссылку
+pygame.display.set_mode(window_size)  # Создаем окно
 
 # Задаем цвет фона
 bg_color = (255, 255, 255)
