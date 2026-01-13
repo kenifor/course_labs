@@ -1,19 +1,25 @@
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, jsonify
 import sqlite3
 import os
 import subprocess
-import pickle
+import json
 import logging
+import ast
+from markupsafe import escape
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-app.config["DEBUG"] = True
+# Fix: Disable DEBUG mode in production
+app.config["DEBUG"] = False
 
-DB_USER = "admin"
-DB_PASSWORD = "SuperSecret123"
+# Fix: Move credentials to environment variables
+DB_USER = os.environ.get("DB_USER", "user")
+DB_PASSWORD = os.environ.get("DB_PASSWORD", "changeme")
 DB_PATH = "app.db"
 
-logging.basicConfig(level=logging.DEBUG)
+# Fix: Set logging level to INFO instead of DEBUG
+logging.basicConfig(level=logging.INFO)
 
 
 def get_db():
@@ -23,7 +29,8 @@ def get_db():
 
 @app.route("/")
 def index():
-    return "Vulnerable lab07 app v1.0"
+    # Fix: Remove version disclosure
+    return "Lab07 Security-Enhanced Application"
 
 
 @app.route("/user")
@@ -31,9 +38,10 @@ def get_user():
     username = request.args.get("name", "")
     conn = get_db()
     cur = conn.cursor()
-    query = f"SELECT id, name, email FROM users WHERE name = '{username}'"  # nosec B608
-    app.logger.debug("Executing query: %s", query)
-    rows = cur.execute(query).fetchall()
+    # Fix: Use parameterized query to prevent SQL injection
+    query = "SELECT id, name, email FROM users WHERE name = ?"
+    app.logger.info("Fetching user data")  # Fix: Don't log query details
+    rows = cur.execute(query, (username,)).fetchall()
     conn.close()
     return {"result": rows}
 
@@ -41,63 +49,106 @@ def get_user():
 @app.route("/search")
 def search():
     q = request.args.get("q", "")
-    html = f"<h1>Results for: {q}</h1>"
+    # Fix: Escape user input to prevent XSS
+    safe_q = escape(q)
+    html = f"<h1>Results for: {safe_q}</h1>"
     return make_response(html, 200)
 
 
 @app.route("/ping")
 def ping():
     host = request.args.get("host", "127.0.0.1")
-    cmd = f"ping -c 1 {host}"  # nosec B605
-    os.system(cmd)
-    return f"Pinged {host}"
+    # Fix: Validate input and use subprocess.run with list arguments
+    # Only allow alphanumeric, dots, and hyphens for hostnames/IPs
+    if not all(c.isalnum() or c in ".-" for c in host):
+        return "Invalid host format", 400
+    if len(host) > 255:
+        return "Host too long", 400
+
+    try:
+        # Fix: Use subprocess.run with list args to prevent command injection
+        result = subprocess.run(
+            ["/bin/ping", "-c", "1", "-W", "2", host],
+            capture_output=True,
+            text=True,
+            timeout=5
+        )
+        return f"Ping result: {result.returncode}"
+    except subprocess.TimeoutExpired:
+        return "Ping timeout", 408
+    except Exception as e:
+        app.logger.error("Ping error")
+        return "Ping failed", 500
 
 
 @app.route("/backup")
 def backup():
-    target = request.args.get("target", "/tmp/backup.sql")  # nosec B108
-    cmd = ["sh", "-c", f"pg_dump mydb > {target}"]
-    subprocess.call(cmd)
-    return f"Backup to {target} started"
+    # Fix: Remove this dangerous endpoint or restrict access
+    # For now, disable functionality
+    return "Backup functionality has been disabled for security", 403
 
 
 @app.route("/read")
 def read_file():
-    path = request.args.get("path", "/etc/passwd")
+    # Fix: Restrict file access to allowed directory and use secure_filename
+    filename = request.args.get("filename", "")
+    if not filename:
+        return "Filename required", 400
+
+    # Only allow reading from /tmp/safe_files directory
+    safe_dir = "/tmp/safe_files"
+    safe_name = secure_filename(filename)
+    full_path = os.path.join(safe_dir, safe_name)
+
+    # Ensure path doesn't escape safe directory
+    if not os.path.abspath(full_path).startswith(os.path.abspath(safe_dir)):
+        return "Access denied", 403
+
     try:
-        with open(path, "r") as f:
+        if not os.path.exists(full_path):
+            return "File not found", 404
+        with open(full_path, "r") as f:
             data = f.read()
-        return f"<pre>{data}</pre>"
+        return f"<pre>{escape(data)}</pre>"
     except Exception as e:
-        return str(e), 500
+        app.logger.error("File read error")
+        return "Error reading file", 500
 
 
 @app.route("/load")
 def load():
     data = request.args.get("data", "")
     try:
-        obj = pickle.loads(bytes.fromhex(data))  # nosec B301
-        return f"Loaded object: {obj}"
+        # Fix: Use JSON instead of pickle for deserialization
+        obj = json.loads(data)
+        return jsonify({"loaded_object": obj})
+    except json.JSONDecodeError as e:
+        return "Invalid JSON data", 400
     except Exception as e:
-        return f"Error: {e}", 500
+        app.logger.error("Load error")
+        return "Error loading data", 500
 
 
 @app.route("/calc")
 def calc():
     expr = request.args.get("expr", "1+1")
-    result = eval(expr)  # nosec B307
-    return str(result)
+    try:
+        # Fix: Use ast.literal_eval for safe evaluation (only literals)
+        result = ast.literal_eval(expr)
+        return str(result)
+    except (ValueError, SyntaxError):
+        return "Invalid expression. Only numeric literals allowed", 400
+    except Exception as e:
+        app.logger.error("Calc error")
+        return "Calculation error", 500
 
 
-@app.route("/debug")
-def debug():
-    headers = dict(request.headers)
-    env = dict(os.environ)
-    return {
-        "headers": headers,
-        "env_sample": {k: env[k] for k in list(env)[:10]},
-    }
+# Fix: Remove debug endpoint that exposes sensitive information
+# @app.route("/debug")
+# def debug():
+#     This endpoint has been removed for security
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)  # nosec B104
+    # Fix: Bind to localhost instead of 0.0.0.0
+    app.run(host="127.0.0.1", port=8080)
