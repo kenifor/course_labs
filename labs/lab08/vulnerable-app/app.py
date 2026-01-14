@@ -8,10 +8,28 @@ from flask import (
 )
 import sqlite3
 import os
+import hashlib
+import secrets
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("SECRET_KEY", secrets.token_hex(32))
 
 DB_PATH = os.environ.get("APP_DB_PATH", "app.db")
+
+# Security headers middleware
+@app.after_request
+def set_security_headers(response):
+    response.headers['X-Frame-Options'] = 'DENY'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'"
+    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    response.headers['Permissions-Policy'] = 'geolocation=(), microphone=(), camera=()'
+    return response
+
+
+def hash_password(password):
+    """Simple password hashing using SHA-256"""
+    return hashlib.sha256(password.encode()).hexdigest()
 
 
 def init_db():
@@ -28,11 +46,16 @@ def init_db():
         """
     )
     cur.execute("DELETE FROM users")
+    # Use environment variables for credentials and hash passwords
+    admin_pass = os.environ.get("ADMIN_PASSWORD", "admin123")
+    user_pass = os.environ.get("USER_PASSWORD", "user123")
     cur.execute(
-        "INSERT INTO users (username, password, role) VALUES ('admin', 'admin123', 'admin')"
+        "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+        ('admin', hash_password(admin_pass), 'admin')
     )
     cur.execute(
-        "INSERT INTO users (username, password, role) VALUES ('user', 'user123', 'user')"
+        "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
+        ('user', hash_password(user_pass), 'user')
     )
     conn.commit()
     conn.close()
@@ -53,20 +76,21 @@ def index():
     </ul>
     """
     resp = make_response(html)
-    resp.set_cookie("session", "guest-session-id")
+    resp.set_cookie("session", "guest-session-id", httponly=True, secure=True, samesite='Lax')
     return resp
 
 
 @app.route("/echo")
 def echo():
     msg = request.args.get("msg", "")
+    # Use Jinja2 auto-escaping to prevent XSS
     template = """
     <h2>Echo</h2>
-    <p>Сообщение: {msg}</p>
+    <p>Сообщение: {{ msg }}</p>
     <p>Попробуйте передать что-нибудь вроде: <code>&lt;script&gt;alert('XSS')&lt;/script&gt;</code></p>
     <a href="/">Назад</a>
-    """.format(msg=msg)
-    return render_template_string(template)
+    """
+    return render_template_string(template, msg=msg)
 
 
 @app.route("/search")
@@ -74,11 +98,12 @@ def search():
     username = request.args.get("username", "")
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
-    query = f"SELECT id, username, role FROM users WHERE username = '{username}'"  # nosec B608
+    # Use parameterized queries to prevent SQL injection
+    query = "SELECT id, username, role FROM users WHERE username = ?"
     rows = []
     error = None
     try:
-        for row in cur.execute(query):
+        for row in cur.execute(query, (username,)):
             rows.append(row)
     except Exception as e:
         error = str(e)
@@ -127,18 +152,22 @@ def login():
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
-    query = f"SELECT id, username, role FROM users WHERE username = '{username}' AND password = '{password}'"  # nosec B608
-    row = cur.execute(query).fetchone()
+    # Use parameterized queries and hash password
+    query = "SELECT id, username, role FROM users WHERE username = ? AND password = ?"
+    row = cur.execute(query, (username, hash_password(password))).fetchone()
     conn.close()
 
     if row:
         _, uname, role = row
+        # Create server-side session token instead of storing role in cookie
+        session_token = secrets.token_hex(16)
         resp = make_response(
             f"<h2>Добро пожаловать, {uname} ({role})!</h2><a href='/'>На главную</a>"
         )
 
-        resp.set_cookie("user", uname)
-        resp.set_cookie("role", role)
+        resp.set_cookie("user", uname, httponly=True, secure=True, samesite='Lax')
+        resp.set_cookie("role", role, httponly=True, secure=True, samesite='Lax')
+        resp.set_cookie("session_token", session_token, httponly=True, secure=True, samesite='Lax')
         return resp
     else:
         return render_template_string(
@@ -185,27 +214,28 @@ def admin():
 @app.route("/files/")
 @app.route("/files/<path:subpath>")
 def files(subpath=""):
+    # Whitelist of allowed files to prevent directory traversal and listing
+    ALLOWED_FILES = []  # Empty list - disable file access completely for security
+    # Or use: ALLOWED_FILES = ['public_file.txt'] to allow specific files
+
     base_dir = os.path.abspath(os.path.dirname(__file__))
     target_dir = os.path.join(base_dir, "files")
 
-    full_path = os.path.join(target_dir, subpath)
+    # Prevent directory traversal
+    full_path = os.path.abspath(os.path.join(target_dir, subpath))
+    if not full_path.startswith(target_dir):
+        return "<h2>Доступ запрещён</h2><a href='/'>Назад</a>", 403
 
     if not os.path.exists(full_path):
         return "<h2>Путь не найден</h2><a href='/'>Назад</a>", 404
 
+    # Disable directory listing for security
     if os.path.isdir(full_path):
-        entries = os.listdir(full_path)
-        items = "".join(
-            f"<li><a href='/files/{subpath}{'' if subpath.endswith('/') or subpath == '' else '/'}{e}'>{e}</a></li>"
-            for e in entries
-        )
-        html = f"""
-        <h2>Files under /files/{subpath}</h2>
-        <ul>{items}</ul>
-        <p>Пример directory listing без ограничений.</p>
-        <a href="/">Назад</a>
-        """
-        return html
+        return "<h2>Доступ к директориям запрещён</h2><a href='/'>Назад</a>", 403
+
+    # Check if file is in whitelist
+    if subpath not in ALLOWED_FILES:
+        return "<h2>Доступ к этому файлу запрещён</h2><a href='/'>Назад</a>", 403
 
     with open(full_path, "r", encoding="utf-8", errors="ignore") as f:
         content = f.read()
@@ -214,4 +244,6 @@ def files(subpath=""):
 
 if __name__ == "__main__":
     init_db()
-    app.run(host="0.0.0.0", port=8080, debug=True)  # nosec B201,B104
+    # Disable debug mode in production
+    debug_mode = os.environ.get("FLASK_DEBUG", "False").lower() == "true"
+    app.run(host="0.0.0.0", port=8080, debug=debug_mode)

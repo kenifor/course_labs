@@ -1,0 +1,16 @@
+{
+  "database": {
+    "host": "localhost",
+    "port": 5432,
+    "username": "dbadmin",
+    "password": "dbpass123"
+  },
+  "api": {
+    "key": "sk_live_51234567890abcdef",
+    "secret": "whsec_9876543210fedcba"
+  },
+  "features": {
+    "debug": true,
+    "experimental_mode": true
+  }
+}
